@@ -204,17 +204,36 @@ function parseInputTokens(rawText) {
   return tokens;
 }
 
+function isTouchDevice() {
+  const hasCoarsePointer =
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(pointer: coarse)").matches;
+  const hasTouchPoints = Number(navigator.maxTouchPoints || 0) > 0;
+  const hasTouchEvent = "ontouchstart" in window;
+
+  return hasCoarsePointer || hasTouchPoints || hasTouchEvent;
+}
+
 function shouldAutoFocusInput() {
-  if (typeof window.matchMedia !== "function") {
-    return true;
+  return !isTouchDevice();
+}
+
+function dismissMobileKeyboard() {
+  if (shouldAutoFocusInput()) {
+    return;
   }
 
-  return !window.matchMedia("(pointer: coarse)").matches;
+  const activeElement = document.activeElement;
+  if (activeElement && typeof activeElement.blur === "function") {
+    activeElement.blur();
+  }
+
+  elements.inputValues.blur();
 }
 
 function restoreInputFocus() {
   if (!shouldAutoFocusInput()) {
-    elements.inputValues.blur();
+    dismissMobileKeyboard();
     return;
   }
 
@@ -388,6 +407,8 @@ function convertToken(token, fromUnit, toUnit, convertConfig) {
 }
 
 function onConvert() {
+  dismissMobileKeyboard();
+
   const tokens = parseInputTokens(elements.inputValues.value);
   if (!tokens.length) {
     showStatus("변환할 값을 입력해주세요.", "warning");
@@ -409,6 +430,7 @@ function onConvert() {
   renderResults(currentResults);
   showStatus(`${currentResults.length}개 항목을 변환했습니다.`, "success");
   restoreInputFocus();
+  window.setTimeout(dismissMobileKeyboard, 0);
 }
 
 function handleInputPaste(event) {
@@ -443,6 +465,7 @@ function bindEvents() {
   elements.convertType.addEventListener("change", onTypeChanged);
   elements.fromUnit.addEventListener("change", onFromChanged);
   elements.swapButton.addEventListener("click", swapUnits);
+  elements.convertButton.addEventListener("pointerdown", dismissMobileKeyboard);
   elements.convertButton.addEventListener("click", onConvert);
   elements.copyButton.addEventListener("click", copyAllResults);
   elements.clearButton.addEventListener("click", clearResults);

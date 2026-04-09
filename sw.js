@@ -1,4 +1,4 @@
-const CACHE_NAME = "all-in-one-unit-converter-v1";
+const CACHE_NAME = "all-in-one-unit-converter-v2";
 const APP_ASSETS = [
   "./",
   "./index.html",
