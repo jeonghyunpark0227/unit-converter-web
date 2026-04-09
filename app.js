@@ -204,7 +204,20 @@ function parseInputTokens(rawText) {
   return tokens;
 }
 
+function shouldAutoFocusInput() {
+  if (typeof window.matchMedia !== "function") {
+    return true;
+  }
+
+  return !window.matchMedia("(pointer: coarse)").matches;
+}
+
 function restoreInputFocus() {
+  if (!shouldAutoFocusInput()) {
+    elements.inputValues.blur();
+    return;
+  }
+
   elements.inputValues.focus({ preventScroll: true });
   elements.inputValues.select();
 }
@@ -466,7 +479,10 @@ function initializeApp() {
   bindEvents();
   renderResults(currentResults);
   registerServiceWorker();
-  elements.inputValues.focus({ preventScroll: true });
+
+  if (shouldAutoFocusInput()) {
+    elements.inputValues.focus({ preventScroll: true });
+  }
 }
 
 initializeApp();
