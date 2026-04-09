@@ -1,0 +1,30 @@
+{
+  "name": "All-in-One 단위 변환기",
+  "short_name": "단위 변환기",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#0d567c",
+  "lang": "ko",
+  "description": "길이, 열저항, 압력, 점도를 한 번에 처리하는 모바일 우선 정적 단위 변환기",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="모바일 브라우저에서 바로 쓰는 All-in-One 단위 변환기">
+  <meta name="theme-color" content="#f4f7fb" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#08131d" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="단위 변환기">
+  <title>All-in-One 단위 변환기</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <p class="eyebrow">Static Mobile Web App</p>
+      <h1>All-in-One 단위 변환기</h1>
+      <p class="header-copy">
+        기준 Python 프로그램의 입력 처리와 결과 표 구조를 유지한 모바일 우선 변환기입니다.
+      </p>
+    </header>
+
+    <main class="app-main">
+      <section class="panel controls-panel" aria-labelledby="controls-title">
+        <div class="section-heading">
+          <h2 id="controls-title">변환 설정</h2>
+          <p>공백, 쉼표, 여러 줄 붙여넣기를 그대로 처리합니다.</p>
+        </div>
+
+        <div class="field">
+          <label for="inputValues">값 입력</label>
+          <input
+            id="inputValues"
+            class="text-input"
+            type="text"
+            inputmode="text"
+            enterkeyhint="go"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="예: 10 20,30 1,234"
+          >
+          <p class="field-hint">Enter 키로 바로 변환 실행</p>
+        </div>
+
+        <div class="field">
+          <label for="convertType">변환 종류</label>
+          <select id="convertType" class="select-input"></select>
+        </div>
+
+        <div class="unit-grid">
+          <div class="field">
+            <label for="fromUnit">입력 단위</label>
+            <select id="fromUnit" class="select-input"></select>
+          </div>
+
+          <div class="swap-slot">
+            <button id="swapButton" class="swap-button" type="button" aria-label="입력 단위와 변환 단위 바꾸기">
+              ↕
+            </button>
+          </div>
+
+          <div class="field">
+            <label for="toUnit">변환 단위</label>
+            <select id="toUnit" class="select-input"></select>
+          </div>
+        </div>
+
+        <div class="primary-actions">
+          <button id="convertButton" class="button button-primary" type="button">변환 실행</button>
+        </div>
+
+        <div class="secondary-actions">
+          <button id="copyButton" class="button button-secondary" type="button">전체 복사</button>
+          <button id="clearButton" class="button button-secondary" type="button">결과 지우기</button>
+        </div>
+
+        <div id="statusMessage" class="status-message" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="panel results-panel" aria-labelledby="results-title">
+        <div class="section-heading">
+          <h2 id="results-title">변환 결과</h2>
+          <p>결과 행 또는 결과값을 탭하면 결과값만 복사됩니다.</p>
+        </div>
+
+        <div class="table-scroll">
+          <table id="resultsTable" class="results-table">
+            <thead>
+              <tr>
+                <th scope="col">입력값</th>
+                <th scope="col">입력단위</th>
+                <th scope="col">결과값</th>
+                <th scope="col">변환단위</th>
+                <th scope="col">공식</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+
+        <p id="emptyState" class="empty-state">아직 변환 결과가 없습니다.</p>
+      </section>
+    </main>
+  </div>
+
+  <noscript>
+    <div class="noscript-banner">이 앱은 JavaScript가 필요합니다.</div>
+  </noscript>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>

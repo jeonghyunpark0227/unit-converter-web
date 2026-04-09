@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">All-in-One 단위 변환기 아이콘</title>
+  <desc id="desc">청록 계열 바탕 위에 UC 문자와 화살표가 있는 아이콘</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d567c" />
+      <stop offset="100%" stop-color="#1d8fb6" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="108" fill="url(#bg)" />
+  <rect x="78" y="78" width="356" height="356" rx="88" fill="#08131d" opacity="0.18" />
+  <path d="M160 145h54v132c0 23 13 36 36 36 22 0 35-13 35-36V145h54v138c0 54-33 87-89 87-58 0-90-33-90-87z" fill="#f5fbff" />
+  <path d="M366 173l49 48-49 48v-31h-88v-34h88z" fill="#d9f4ff" />
+  <path d="M146 339l-49-48 49-48v31h88v34h-88z" fill="#d9f4ff" />
+</svg>
