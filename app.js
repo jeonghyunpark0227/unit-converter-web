@@ -320,8 +320,14 @@ async function copyText(text) {
   helper.style.opacity = "0";
   document.body.append(helper);
   helper.select();
-  document.execCommand("copy");
+  const copied =
+    typeof document.execCommand === "function" &&
+    document.execCommand("copy");
   helper.remove();
+
+  if (!copied) {
+    throw new Error("클립보드 복사를 지원하지 않는 환경입니다.");
+  }
 }
 
 async function copyAllResults() {

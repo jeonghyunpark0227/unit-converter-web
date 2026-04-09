@@ -1,4 +1,4 @@
-const CACHE_NAME = "all-in-one-unit-converter-v2";
+const CACHE_NAME = "all-in-one-unit-converter-v3";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -31,30 +31,50 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+async function putInCache(request, response) {
+  if (!response || !response.ok) {
+    return response;
+  }
+
+  const cache = await caches.open(CACHE_NAME);
+  cache.put(request, response.clone());
+  return response;
+}
+
+async function handleNavigationRequest(request) {
+  try {
+    const networkResponse = await fetch(request);
+    return putInCache("./index.html", networkResponse);
+  } catch {
+    return caches.match("./index.html");
+  }
+}
+
+async function handleAssetRequest(request, event) {
+  const cachedResponse = await caches.match(request);
+
+  const networkResponsePromise = fetch(request)
+    .then((networkResponse) => putInCache(request, networkResponse))
+    .catch(() => null);
+
+  if (cachedResponse) {
+    event.waitUntil?.(networkResponsePromise);
+    return cachedResponse;
+  }
+
+  const networkResponse = await networkResponsePromise;
+  return networkResponse || Response.error();
+}
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+  if (event.request.mode === "navigate") {
+    event.respondWith(handleNavigationRequest(event.request));
+    return;
+  }
 
-      return fetch(event.request).then((networkResponse) => {
-        const responseClone = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseClone);
-        });
-        return networkResponse;
-      }).catch(() => {
-        if (event.request.mode === "navigate") {
-          return caches.match("./index.html");
-        }
-
-        return caches.match("./");
-      });
-    }),
-  );
+  event.respondWith(handleAssetRequest(event.request, event));
 });
