@@ -9,6 +9,8 @@
 ├─ index.html
 ├─ style.css
 ├─ app.js
+├─ manifest.json
+├─ service-worker.js
 ├─ manifest.webmanifest
 ├─ sw.js
 ├─ README.md
@@ -35,6 +37,7 @@
 - 단위 자동 반대 선택
 - 단위 스왑
 - 홈화면 추가 가능한 PWA 셸 포함
+- 첫 접속 후 오프라인 실행 가능한 서비스 워커 캐시
 
 ## GitHub Pages에 올리는 방법
 
@@ -51,6 +54,8 @@ unit-converter/
 ├─ index.html
 ├─ style.css
 ├─ app.js
+├─ manifest.json
+├─ service-worker.js
 ├─ manifest.webmanifest
 ├─ sw.js
 ├─ README.md
@@ -145,4 +150,5 @@ http://localhost:8000/
 
 - 변환 항목 추가: `app.js`의 `convertTypes`, `convertFormulas` 수정
 - 색상/스타일 변경: `style.css` 수정
-- 앱 이름/아이콘 변경: `index.html`, `manifest.webmanifest`, `icons/` 수정
+- 앱 이름/아이콘 변경: `index.html`, `manifest.json`, `manifest.webmanifest`, `icons/` 수정
+- PWA 캐시 변경: `service-worker.js` 수정

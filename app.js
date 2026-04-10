@@ -455,18 +455,6 @@ function handleInputPaste(event) {
   input.setRangeText(normalizedText, start, end, "end");
 }
 
-function registerServiceWorker() {
-  if (!("serviceWorker" in navigator)) {
-    return;
-  }
-
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {
-      // PWA registration failure should not block core calculator behavior.
-    });
-  });
-}
-
 function bindEvents() {
   elements.convertType.addEventListener("change", onTypeChanged);
   elements.fromUnit.addEventListener("change", onFromChanged);
@@ -507,7 +495,6 @@ function initializeApp() {
   onFromChanged();
   bindEvents();
   renderResults(currentResults);
-  registerServiceWorker();
 
   if (shouldAutoFocusInput()) {
     elements.inputValues.focus({ preventScroll: true });
