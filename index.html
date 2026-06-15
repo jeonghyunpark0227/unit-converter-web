@@ -180,7 +180,7 @@
       <section class="panel calculator-panel" aria-labelledby="qpad-title">
         <div class="section-heading">
           <h2 id="qpad-title">Q-PAD2 양면 코팅 두께 계산기</h2>
-          <p>현재 측정 두께는 한쪽면 코팅층 두께로 보고, 목표 최종 두께에서 한쪽면 추가 필요량을 계산합니다.</p>
+          <p>현재 측정 두께는 첫째면 코팅 후 Al을 포함한 전체 두께로 보고, 목표 최종 두께에서 한쪽면 추가 필요량을 계산합니다.</p>
         </div>
 
         <div class="calculator-grid qpad-grid">
@@ -219,7 +219,7 @@
           </div>
 
           <div class="field">
-            <label for="currentThickness">현재 측정 두께 (한쪽면)</label>
+            <label for="currentThickness">현재 측정 두께 (Al 포함)</label>
             <div class="input-with-unit">
               <input
                 id="currentThickness"
@@ -231,7 +231,7 @@
                 placeholder="예: 6.5"
                 data-qpad-control
               >
-              <select id="currentThicknessUnit" class="select-input" aria-label="현재 측정 두께 한쪽면 단위" data-qpad-control>
+              <select id="currentThicknessUnit" class="select-input" aria-label="현재 측정 두께 Al 포함 단위" data-qpad-control>
                 <option value="um">μm</option>
                 <option value="mil">mil</option>
               </select>

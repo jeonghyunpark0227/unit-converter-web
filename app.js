@@ -676,25 +676,39 @@ function updateQpadCalculator() {
   }
 
   const targetTotalUm = convertThicknessToMicrometer(targetThickness, elements.targetThicknessUnit.value);
-  const currentOneSideUm = convertThicknessToMicrometer(currentThickness, elements.currentThicknessUnit.value);
+  const currentTotalUm = convertThicknessToMicrometer(currentThickness, elements.currentThicknessUnit.value);
   const targetOneSideUm = (targetTotalUm - alUm) / 2;
+  const currentOneSideUm = currentTotalUm - alUm;
   const targetIsValid = targetOneSideUm >= 0;
+  const currentIsValid = currentOneSideUm >= 0;
 
-  setText(elements.currentCoatingSingle, formatThicknessPair(currentOneSideUm));
+  setText(
+    elements.currentCoatingSingle,
+    currentIsValid ? formatThicknessPair(currentOneSideUm) : "Al보다 작음",
+  );
   setText(
     elements.targetCoatingSingle,
     targetIsValid ? formatThicknessPair(targetOneSideUm) : "Al보다 작음",
   );
 
-  updateStackVisual(
-    elements.currentStackGraphic,
-    elements.currentTopLayerValue,
-    elements.currentAlLayerValue,
-    elements.currentBottomLayerValue,
-    currentOneSideUm,
-    alUm,
-    0,
-  );
+  if (currentIsValid) {
+    updateStackVisual(
+      elements.currentStackGraphic,
+      elements.currentTopLayerValue,
+      elements.currentAlLayerValue,
+      elements.currentBottomLayerValue,
+      currentOneSideUm,
+      alUm,
+      0,
+    );
+  } else {
+    resetStackVisual(
+      elements.currentStackGraphic,
+      elements.currentTopLayerValue,
+      elements.currentAlLayerValue,
+      elements.currentBottomLayerValue,
+    );
+  }
 
   if (targetIsValid) {
     updateStackVisual(
@@ -714,9 +728,9 @@ function updateQpadCalculator() {
     );
   }
 
-  if (!targetIsValid) {
+  if (!targetIsValid || !currentIsValid) {
     setText(elements.additionalCoatingSingle, "-");
-    setCalculationNote(elements.qpadStatus, "최종 두께는 Al 두께보다 커야 합니다.", "error");
+    setCalculationNote(elements.qpadStatus, "측정 두께와 목표 두께는 Al 두께보다 커야 합니다.", "error");
     return;
   }
 
