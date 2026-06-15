@@ -14,7 +14,7 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./style.css?v=20260615-8">
 </head>
 <body>
   <div class="app-shell">
@@ -325,11 +325,11 @@
     <div class="noscript-banner">이 앱은 JavaScript가 필요합니다.</div>
   </noscript>
 
-  <script src="./app.js" defer></script>
+  <script src="./app.js?v=20260615-8" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js").catch(() => {
+        navigator.serviceWorker.register("./service-worker.js?v=20260615-8").catch(() => {
           // PWA registration failure should not block calculator usage.
         });
       });

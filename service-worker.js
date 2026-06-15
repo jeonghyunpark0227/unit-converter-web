@@ -1,9 +1,9 @@
-const CACHE_NAME = "all-in-one-unit-converter-pwa-v5";
+const CACHE_NAME = "all-in-one-unit-converter-pwa-v6";
 const APP_SHELL_FILES = [
   "./",
   "./index.html",
-  "./style.css",
-  "./app.js",
+  "./style.css?v=20260615-8",
+  "./app.js?v=20260615-8",
   "./manifest.json",
   "./manifest.webmanifest",
   "./icons/icon.svg",
