@@ -104,6 +104,7 @@ const elements = {
   currentCoatingSingle: document.querySelector("#currentCoatingSingle"),
   targetCoatingSingle: document.querySelector("#targetCoatingSingle"),
   additionalCoatingSingle: document.querySelector("#additionalCoatingSingle"),
+  oppositeAdditionalCoatingSingle: document.querySelector("#oppositeAdditionalCoatingSingle"),
   qpadStatus: document.querySelector("#qpadStatus"),
   qpadResetButton: document.querySelector("#qpadResetButton"),
   currentStackGraphic: document.querySelector("#currentStackGraphic"),
@@ -640,6 +641,7 @@ function renderQpadEmpty() {
   setText(elements.currentCoatingSingle, "-");
   setText(elements.targetCoatingSingle, "-");
   setText(elements.additionalCoatingSingle, "-");
+  setText(elements.oppositeAdditionalCoatingSingle, "-");
   setCalculationNote(elements.qpadStatus, "입력 대기", "muted");
   resetStackVisual(
     elements.currentStackGraphic,
@@ -730,26 +732,29 @@ function updateQpadCalculator() {
 
   if (!targetIsValid || !currentIsValid) {
     setText(elements.additionalCoatingSingle, "-");
+    setText(elements.oppositeAdditionalCoatingSingle, "-");
     setCalculationNote(elements.qpadStatus, "측정 두께와 목표 두께는 Al 두께보다 커야 합니다.", "error");
     return;
   }
 
   const additionalOneSideUm = targetOneSideUm - currentOneSideUm;
+  const oppositeAdditionalUm = targetOneSideUm;
+  setText(elements.oppositeAdditionalCoatingSingle, formatThicknessPair(oppositeAdditionalUm));
 
   if (additionalOneSideUm > 0) {
     setText(elements.additionalCoatingSingle, formatThicknessPair(additionalOneSideUm));
-    setCalculationNote(elements.qpadStatus, "한쪽면 기준 추가 필요", "warning");
+    setCalculationNote(elements.qpadStatus, "측정면과 반대쪽면 코팅 필요", "warning");
     return;
   }
 
   if (additionalOneSideUm < 0) {
     setText(elements.additionalCoatingSingle, `0 μm (초과 ${formatThicknessPair(Math.abs(additionalOneSideUm))})`);
-    setCalculationNote(elements.qpadStatus, "목표 두께 이상", "success");
+    setCalculationNote(elements.qpadStatus, "측정면은 목표 이상, 반대쪽면 코팅 필요", "warning");
     return;
   }
 
   setText(elements.additionalCoatingSingle, "0 μm");
-  setCalculationNote(elements.qpadStatus, "목표 두께 일치", "success");
+  setCalculationNote(elements.qpadStatus, "측정면 목표 일치, 반대쪽면 코팅 필요", "warning");
 }
 
 function resetQpadCalculator() {

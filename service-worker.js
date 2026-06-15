@@ -1,4 +1,4 @@
-const CACHE_NAME = "all-in-one-unit-converter-pwa-v4";
+const CACHE_NAME = "all-in-one-unit-converter-pwa-v5";
 const APP_SHELL_FILES = [
   "./",
   "./index.html",
