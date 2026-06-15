@@ -74,6 +74,19 @@ const numberTokenPatternSource =
   "[+-]?(?:(?:(?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d*)?)|\\.\\d+)";
 
 const MIL_TO_MICROMETER = 25.4;
+const DEFAULT_QUICK_LENGTHS = ["1", "10", "50", "100", "200", "500", "600"];
+const DEFAULT_RECIPE_VALUES = {
+  siliconRatio: "91.00",
+  graphiteRatio: "9.00",
+  totalKg: "135.000",
+  coatingWidth: "1080.00",
+  coatingLength: "700.00",
+  coatingOneSideThickness: "6.00",
+  coatingSideCount: "2.00",
+  coatingSolidsPercent: "28.50",
+  coatingDensity: "1.00",
+  coatingLossPercent: "20.00",
+};
 
 const elements = {
   inputValues: document.querySelector("#inputValues"),
@@ -117,8 +130,37 @@ const elements = {
   targetTopLayerValue: document.querySelector("#targetTopLayerValue"),
   targetAlLayerValue: document.querySelector("#targetAlLayerValue"),
   targetBottomLayerValue: document.querySelector("#targetBottomLayerValue"),
+  recipeSiliconRatio: document.querySelector("#recipeSiliconRatio"),
+  recipeGraphiteRatio: document.querySelector("#recipeGraphiteRatio"),
+  recipeTotalKg: document.querySelector("#recipeTotalKg"),
+  recipeSiliconRate: document.querySelector("#recipeSiliconRate"),
+  recipeGraphiteRate: document.querySelector("#recipeGraphiteRate"),
+  recipeSiliconAmount: document.querySelector("#recipeSiliconAmount"),
+  recipeGraphiteAmount: document.querySelector("#recipeGraphiteAmount"),
+  recipeRatioTotal: document.querySelector("#recipeRatioTotal"),
+  recipeCalculatedTotal: document.querySelector("#recipeCalculatedTotal"),
+  recipeStatus: document.querySelector("#recipeStatus"),
+  coatingWidth: document.querySelector("#coatingWidth"),
+  coatingLength: document.querySelector("#coatingLength"),
+  coatingOneSideThickness: document.querySelector("#coatingOneSideThickness"),
+  coatingSideCount: document.querySelector("#coatingSideCount"),
+  coatingSolidsPercent: document.querySelector("#coatingSolidsPercent"),
+  coatingDensity: document.querySelector("#coatingDensity"),
+  coatingLossPercent: document.querySelector("#coatingLossPercent"),
+  coatingTotalDryThickness: document.querySelector("#coatingTotalDryThickness"),
+  coatingVolume: document.querySelector("#coatingVolume"),
+  coatingDrySolid: document.querySelector("#coatingDrySolid"),
+  coatingNoLossG: document.querySelector("#coatingNoLossG"),
+  coatingWithLossG: document.querySelector("#coatingWithLossG"),
+  coatingWithLossKg: document.querySelector("#coatingWithLossKg"),
+  coatingStatus: document.querySelector("#coatingStatus"),
+  applyCoatingRecipeButton: document.querySelector("#applyCoatingRecipeButton"),
+  quickLengthRows: document.querySelector("#quickLengthRows"),
+  resetRecipeButton: document.querySelector("#resetRecipeButton"),
   solidInputs: Array.from(document.querySelectorAll("[data-solid-input]")),
   qpadControls: Array.from(document.querySelectorAll("[data-qpad-control]")),
+  recipeControls: Array.from(document.querySelectorAll("[data-recipe-control]")),
+  coatingControls: Array.from(document.querySelectorAll("[data-coating-control]")),
 };
 
 let currentResults = [];
@@ -526,8 +568,23 @@ function formatNumber(value, maximumFractionDigits = 4) {
   });
 }
 
+function formatFixedNumber(value, fractionDigits = 2) {
+  if (!Number.isFinite(value)) {
+    return "-";
+  }
+
+  return value.toLocaleString("ko-KR", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  });
+}
+
 function formatMeasurement(value, unit, maximumFractionDigits = 4) {
   return `${formatNumber(value, maximumFractionDigits)} ${unit}`;
+}
+
+function formatFixedMeasurement(value, unit, fractionDigits = 2) {
+  return `${formatFixedNumber(value, fractionDigits)} ${unit}`;
 }
 
 function formatThicknessPair(valueUm) {
@@ -799,6 +856,282 @@ function resetQpadCalculator() {
   focusInputIfDesktop(elements.alThickness);
 }
 
+function getRecipeRatioValues() {
+  return {
+    siliconRatio: parseNumberInput(elements.recipeSiliconRatio),
+    graphiteRatio: parseNumberInput(elements.recipeGraphiteRatio),
+  };
+}
+
+function setRecipeBlankState(message = "배합률과 총 배합량을 입력하세요.", tone = "muted") {
+  setText(elements.recipeSiliconRate, "-");
+  setText(elements.recipeGraphiteRate, "-");
+  setText(elements.recipeSiliconAmount, "-");
+  setText(elements.recipeGraphiteAmount, "-");
+  setText(elements.recipeRatioTotal, "-");
+  setText(elements.recipeCalculatedTotal, "-");
+  setCalculationNote(elements.recipeStatus, message, tone);
+}
+
+function updateRecipeCalculator() {
+  if (!elements.recipeTotalKg) {
+    return;
+  }
+
+  const totalKg = parseNumberInput(elements.recipeTotalKg);
+  const { siliconRatio, graphiteRatio } = getRecipeRatioValues();
+
+  if ([totalKg, siliconRatio, graphiteRatio].some((value) => value === null)) {
+    setRecipeBlankState();
+    return;
+  }
+
+  if (totalKg <= 0 || siliconRatio < 0 || graphiteRatio < 0) {
+    setRecipeBlankState("총 배합량은 0보다 크고, 배합률은 0 이상이어야 합니다.", "error");
+    return;
+  }
+
+  const ratioTotal = siliconRatio + graphiteRatio;
+  const siliconKg = (totalKg * siliconRatio) / 100;
+  const graphiteKg = (totalKg * graphiteRatio) / 100;
+  const calculatedTotalKg = siliconKg + graphiteKg;
+
+  setText(elements.recipeSiliconRate, `${formatFixedNumber(siliconRatio, 2)}%`);
+  setText(elements.recipeGraphiteRate, `${formatFixedNumber(graphiteRatio, 2)}%`);
+  setText(elements.recipeSiliconAmount, formatFixedMeasurement(siliconKg, "kg", 3));
+  setText(elements.recipeGraphiteAmount, formatFixedMeasurement(graphiteKg, "kg", 3));
+  setText(elements.recipeRatioTotal, `${formatFixedNumber(ratioTotal, 2)}%`);
+  setText(elements.recipeCalculatedTotal, formatFixedMeasurement(calculatedTotalKg, "kg", 3));
+
+  if (Math.abs(ratioTotal - 100) > 0.0001) {
+    setCalculationNote(elements.recipeStatus, "배합률 합계가 100%가 아닙니다.", "warning");
+    return;
+  }
+
+  setCalculationNote(elements.recipeStatus, "배합 계산 완료", "success");
+}
+
+function getCoatingInputValues(lengthOverride = null) {
+  return {
+    widthMm: parseNumberInput(elements.coatingWidth),
+    lengthM: lengthOverride ?? parseNumberInput(elements.coatingLength),
+    oneSideThicknessUm: parseNumberInput(elements.coatingOneSideThickness),
+    sideCount: parseNumberInput(elements.coatingSideCount),
+    solidsPercent: parseNumberInput(elements.coatingSolidsPercent),
+    densityGcc: parseNumberInput(elements.coatingDensity),
+    lossPercent: parseNumberInput(elements.coatingLossPercent),
+  };
+}
+
+function hasMissingCoatingInput(values) {
+  return Object.values(values).some((value) => value === null);
+}
+
+function validateCoatingInputValues(values) {
+  if (hasMissingCoatingInput(values)) {
+    return "missing";
+  }
+
+  const positiveValues = [
+    values.widthMm,
+    values.lengthM,
+    values.oneSideThicknessUm,
+    values.sideCount,
+    values.solidsPercent,
+    values.densityGcc,
+  ];
+
+  if (positiveValues.some((value) => value <= 0) || values.lossPercent < 0) {
+    return "invalid";
+  }
+
+  if (values.solidsPercent > 100) {
+    return "solids";
+  }
+
+  return "ok";
+}
+
+function calculateCoatingSolution(values) {
+  const totalDryThicknessUm = values.oneSideThicknessUm * values.sideCount;
+  const volumeCc = (values.widthMm * values.lengthM * totalDryThicknessUm) / 1000;
+  const drySolidG = volumeCc * values.densityGcc;
+  const noLossSolutionG = drySolidG / (values.solidsPercent / 100);
+  const withLossSolutionG = noLossSolutionG * (1 + values.lossPercent / 100);
+
+  return {
+    totalDryThicknessUm,
+    volumeCc,
+    drySolidG,
+    noLossSolutionG,
+    withLossSolutionG,
+    withLossKg: withLossSolutionG / 1000,
+  };
+}
+
+function setCoatingBlankState(message = "코팅 조건을 입력하세요.", tone = "muted") {
+  setText(elements.coatingTotalDryThickness, "-");
+  setText(elements.coatingVolume, "-");
+  setText(elements.coatingDrySolid, "-");
+  setText(elements.coatingNoLossG, "-");
+  setText(elements.coatingWithLossG, "-");
+  setText(elements.coatingWithLossKg, "-");
+  setCalculationNote(elements.coatingStatus, message, tone);
+}
+
+function renderCoatingResult(result) {
+  setText(elements.coatingTotalDryThickness, formatFixedMeasurement(result.totalDryThicknessUm, "μm", 2));
+  setText(elements.coatingVolume, formatFixedMeasurement(result.volumeCc, "cc", 2));
+  setText(elements.coatingDrySolid, formatFixedMeasurement(result.drySolidG, "g", 2));
+  setText(elements.coatingNoLossG, formatFixedMeasurement(result.noLossSolutionG, "g", 2));
+  setText(elements.coatingWithLossG, formatFixedMeasurement(result.withLossSolutionG, "g", 2));
+  setText(elements.coatingWithLossKg, formatFixedMeasurement(result.withLossKg, "kg", 2));
+  setCalculationNote(elements.coatingStatus, "코팅용액 계산 완료", "success");
+}
+
+function getQuickLengthRows() {
+  return Array.from(elements.quickLengthRows?.querySelectorAll("[data-quick-length-row]") || []);
+}
+
+function setQuickRowBlank(row) {
+  setText(row.querySelector("[data-quick-no-loss]"), "-");
+  setText(row.querySelector("[data-quick-with-loss-g]"), "-");
+  setText(row.querySelector("[data-quick-with-loss-kg]"), "-");
+  setText(row.querySelector("[data-quick-silicon-kg]"), "-");
+  setText(row.querySelector("[data-quick-graphite-kg]"), "-");
+}
+
+function updateQuickLengthTable() {
+  const baseValues = getCoatingInputValues(1);
+  const baseValidation = validateCoatingInputValues(baseValues);
+  const { siliconRatio, graphiteRatio } = getRecipeRatioValues();
+  const hasValidRatios =
+    siliconRatio !== null &&
+    graphiteRatio !== null &&
+    siliconRatio >= 0 &&
+    graphiteRatio >= 0;
+
+  getQuickLengthRows().forEach((row) => {
+    const lengthInput = row.querySelector("[data-quick-length]");
+    const lengthM = parseNumberInput(lengthInput);
+
+    if (baseValidation !== "ok" || lengthM === null || lengthM <= 0) {
+      setQuickRowBlank(row);
+      return;
+    }
+
+    const result = calculateCoatingSolution({ ...baseValues, lengthM });
+    setText(row.querySelector("[data-quick-no-loss]"), formatFixedMeasurement(result.noLossSolutionG, "g", 2));
+    setText(row.querySelector("[data-quick-with-loss-g]"), formatFixedMeasurement(result.withLossSolutionG, "g", 2));
+    setText(row.querySelector("[data-quick-with-loss-kg]"), formatFixedMeasurement(result.withLossKg, "kg", 3));
+
+    if (!hasValidRatios) {
+      setText(row.querySelector("[data-quick-silicon-kg]"), "-");
+      setText(row.querySelector("[data-quick-graphite-kg]"), "-");
+      return;
+    }
+
+    setText(
+      row.querySelector("[data-quick-silicon-kg]"),
+      formatFixedMeasurement((result.withLossKg * siliconRatio) / 100, "kg", 3),
+    );
+    setText(
+      row.querySelector("[data-quick-graphite-kg]"),
+      formatFixedMeasurement((result.withLossKg * graphiteRatio) / 100, "kg", 3),
+    );
+  });
+}
+
+function updateCoatingSolutionCalculator() {
+  if (!elements.coatingWidth) {
+    return null;
+  }
+
+  const values = getCoatingInputValues();
+  const validation = validateCoatingInputValues(values);
+
+  if (validation === "missing") {
+    setCoatingBlankState();
+    updateQuickLengthTable();
+    return null;
+  }
+
+  if (validation === "invalid") {
+    setCoatingBlankState("코팅 조건은 0보다 크고, 로스율은 0 이상이어야 합니다.", "error");
+    updateQuickLengthTable();
+    return null;
+  }
+
+  if (validation === "solids") {
+    setCoatingBlankState("코팅액 고형분은 100% 이하로 입력하세요.", "error");
+    updateQuickLengthTable();
+    return null;
+  }
+
+  const result = calculateCoatingSolution(values);
+  renderCoatingResult(result);
+  updateQuickLengthTable();
+  return result;
+}
+
+function applyCoatingKgToRecipe(result, message = "코팅용액 kg를 배합 총량에 적용했습니다.") {
+  if (!result || !elements.recipeTotalKg) {
+    setCalculationNote(elements.recipeStatus, "적용할 코팅용액 계산값이 없습니다.", "warning");
+    return;
+  }
+
+  elements.recipeTotalKg.value = formatFixedNumber(result.withLossKg, 3).replace(/,/g, "");
+  updateRecipeCalculator();
+  updateQuickLengthTable();
+  setCalculationNote(elements.recipeStatus, message, "success");
+}
+
+function applyQuickLengthRow(row) {
+  const lengthInput = row?.querySelector("[data-quick-length]");
+  const lengthM = parseNumberInput(lengthInput);
+  if (lengthM === null || lengthM <= 0) {
+    setCalculationNote(elements.coatingStatus, "적용할 코팅길이를 0보다 크게 입력하세요.", "error");
+    return;
+  }
+
+  const values = getCoatingInputValues(lengthM);
+  const validation = validateCoatingInputValues(values);
+  if (validation !== "ok") {
+    setCalculationNote(elements.coatingStatus, "먼저 코팅 조건을 확인하세요.", "error");
+    return;
+  }
+
+  elements.coatingLength.value = formatFixedNumber(lengthM, 2).replace(/,/g, "");
+  const result = updateCoatingSolutionCalculator();
+  applyCoatingKgToRecipe(result, `${formatFixedNumber(lengthM, 2)} m 기준 총량을 적용했습니다.`);
+}
+
+function resetRecipeCalculator() {
+  if (!elements.recipeTotalKg) {
+    return;
+  }
+
+  elements.recipeSiliconRatio.value = DEFAULT_RECIPE_VALUES.siliconRatio;
+  elements.recipeGraphiteRatio.value = DEFAULT_RECIPE_VALUES.graphiteRatio;
+  elements.recipeTotalKg.value = DEFAULT_RECIPE_VALUES.totalKg;
+  elements.coatingWidth.value = DEFAULT_RECIPE_VALUES.coatingWidth;
+  elements.coatingLength.value = DEFAULT_RECIPE_VALUES.coatingLength;
+  elements.coatingOneSideThickness.value = DEFAULT_RECIPE_VALUES.coatingOneSideThickness;
+  elements.coatingSideCount.value = DEFAULT_RECIPE_VALUES.coatingSideCount;
+  elements.coatingSolidsPercent.value = DEFAULT_RECIPE_VALUES.coatingSolidsPercent;
+  elements.coatingDensity.value = DEFAULT_RECIPE_VALUES.coatingDensity;
+  elements.coatingLossPercent.value = DEFAULT_RECIPE_VALUES.coatingLossPercent;
+
+  getQuickLengthRows().forEach((row, index) => {
+    const input = row.querySelector("[data-quick-length]");
+    input.value = DEFAULT_QUICK_LENGTHS[index] || "";
+  });
+
+  updateRecipeCalculator();
+  updateCoatingSolutionCalculator();
+  focusInputIfDesktop(elements.recipeSiliconRatio);
+}
+
 function handleInputPaste(event) {
   const pastedText = event.clipboardData?.getData("text");
   if (typeof pastedText !== "string") {
@@ -859,6 +1192,31 @@ function bindSpecialCalculatorEvents() {
     control.addEventListener("change", updateQpadCalculator);
   });
   elements.qpadResetButton?.addEventListener("click", resetQpadCalculator);
+
+  elements.recipeControls.forEach((control) => {
+    control.addEventListener("input", () => {
+      updateRecipeCalculator();
+      updateQuickLengthTable();
+    });
+  });
+  elements.coatingControls.forEach((control) => {
+    control.addEventListener("input", updateCoatingSolutionCalculator);
+  });
+  elements.quickLengthRows?.addEventListener("input", (event) => {
+    if (event.target.matches("[data-quick-length]")) {
+      updateQuickLengthTable();
+    }
+  });
+  elements.quickLengthRows?.addEventListener("click", (event) => {
+    const applyButton = event.target.closest("[data-quick-apply]");
+    if (applyButton) {
+      applyQuickLengthRow(applyButton.closest("[data-quick-length-row]"));
+    }
+  });
+  elements.applyCoatingRecipeButton?.addEventListener("click", () => {
+    applyCoatingKgToRecipe(updateCoatingSolutionCalculator());
+  });
+  elements.resetRecipeButton?.addEventListener("click", resetRecipeCalculator);
 }
 
 function initializeSpecialCalculators() {
@@ -867,6 +1225,9 @@ function initializeSpecialCalculators() {
   }
   if (elements.currentCoatingSingle) {
     renderQpadEmpty();
+  }
+  if (elements.recipeTotalKg) {
+    resetRecipeCalculator();
   }
 }
 

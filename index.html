@@ -14,7 +14,7 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./style.css?v=20260615-9">
+  <link rel="stylesheet" href="./style.css?v=20260615-11">
 </head>
 <body>
   <div class="app-shell">
@@ -28,6 +28,7 @@
         <button id="converterTabButton" class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="converterTab" data-tab-target="converterTab">단위 변환</button>
         <button id="solidsTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="solidsTab" data-tab-target="solidsTab">고형분</button>
         <button id="qpadTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="qpadTab" data-tab-target="qpadTab">Q-PAD2</button>
+        <button id="recipeTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="recipeTab" data-tab-target="recipeTab">레시피</button>
       </div>
 
       <div id="converterTab" class="tab-panel is-active" role="tabpanel" aria-labelledby="converterTabButton">
@@ -326,6 +327,247 @@
           <button id="qpadResetButton" class="button button-secondary" type="button">입력 초기화</button>
         </div>
       </section>
+
+      <section id="recipeTab" class="tab-panel panel calculator-panel" role="tabpanel" aria-labelledby="recipeTabButton" hidden>
+        <div class="section-heading">
+          <h2 id="recipe-title">레시피 계산기</h2>
+          <p>배합률, 총 배합량, 코팅 조건을 한 탭에서 계산합니다.</p>
+        </div>
+
+        <div class="recipe-sheet">
+          <section class="sheet-section" aria-labelledby="recipeMixTitle">
+            <div class="sheet-section-heading">
+              <h3 id="recipeMixTitle">배합리스트</h3>
+              <p id="recipeStatus" class="calculation-note is-muted" role="status" aria-live="polite">입력 대기</p>
+            </div>
+
+            <div class="calculator-grid recipe-input-grid">
+              <div class="field">
+                <label for="recipeSiliconRatio">Silicon A 배합률 (%)</label>
+                <input
+                  id="recipeSiliconRatio"
+                  class="number-input sheet-input"
+                  type="number"
+                  inputmode="decimal"
+                  step="any"
+                  min="0"
+                  value="91.00"
+                  data-recipe-control
+                >
+              </div>
+
+              <div class="field">
+                <label for="recipeGraphiteRatio">Graphite 배합률 (%)</label>
+                <input
+                  id="recipeGraphiteRatio"
+                  class="number-input sheet-input"
+                  type="number"
+                  inputmode="decimal"
+                  step="any"
+                  min="0"
+                  value="9.00"
+                  data-recipe-control
+                >
+              </div>
+
+              <div class="field">
+                <label for="recipeTotalKg">총 배합량 (kg)</label>
+                <input
+                  id="recipeTotalKg"
+                  class="number-input sheet-input"
+                  type="number"
+                  inputmode="decimal"
+                  step="any"
+                  min="0"
+                  value="135.000"
+                  data-recipe-control
+                >
+              </div>
+            </div>
+
+            <div class="table-scroll sheet-table-scroll">
+              <table class="sheet-table recipe-result-table" aria-label="배합리스트 계산 결과">
+                <thead>
+                  <tr>
+                    <th scope="col">배합률</th>
+                    <th scope="col">품명</th>
+                    <th scope="col">소요물량</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td id="recipeSiliconRate">-</td>
+                    <td>Silicon A</td>
+                    <td id="recipeSiliconAmount">-</td>
+                  </tr>
+                  <tr>
+                    <td id="recipeGraphiteRate">-</td>
+                    <td>Graphite</td>
+                    <td id="recipeGraphiteAmount">-</td>
+                  </tr>
+                  <tr class="sheet-total-row">
+                    <td id="recipeRatioTotal">-</td>
+                    <td>합계</td>
+                    <td id="recipeCalculatedTotal">-</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="sheet-section" aria-labelledby="coatingSolutionTitle">
+            <div class="sheet-section-heading">
+              <h3 id="coatingSolutionTitle">코팅용액 필요량 자동 계산</h3>
+              <p id="coatingStatus" class="calculation-note is-muted" role="status" aria-live="polite">입력 대기</p>
+            </div>
+
+            <div class="calculator-grid coating-input-grid">
+              <div class="field">
+                <label for="coatingWidth">코팅폭 (mm)</label>
+                <input id="coatingWidth" class="number-input sheet-input" type="number" inputmode="decimal" step="any" min="0" value="1080.00" data-coating-control>
+              </div>
+              <div class="field">
+                <label for="coatingLength">코팅길이 (m)</label>
+                <input id="coatingLength" class="number-input sheet-input" type="number" inputmode="decimal" step="any" min="0" value="700.00" data-coating-control>
+              </div>
+              <div class="field">
+                <label for="coatingOneSideThickness">한 면 코팅 두께 (μm)</label>
+                <input id="coatingOneSideThickness" class="number-input sheet-input" type="number" inputmode="decimal" step="any" min="0" value="6.00" data-coating-control>
+              </div>
+              <div class="field">
+                <label for="coatingSideCount">코팅 면 수</label>
+                <input id="coatingSideCount" class="number-input sheet-input" type="number" inputmode="decimal" step="any" min="0" value="2.00" data-coating-control>
+              </div>
+              <div class="field">
+                <label for="coatingSolidsPercent">코팅액 고형분 (%)</label>
+                <input id="coatingSolidsPercent" class="number-input sheet-input" type="number" inputmode="decimal" step="any" min="0" value="28.50" data-coating-control>
+              </div>
+              <div class="field">
+                <label for="coatingDensity">건조 코팅층 밀도 (g/cc)</label>
+                <input id="coatingDensity" class="number-input sheet-input" type="number" inputmode="decimal" step="any" min="0" value="1.00" data-coating-control>
+              </div>
+              <div class="field">
+                <label for="coatingLossPercent">로스율 (%)</label>
+                <input id="coatingLossPercent" class="number-input sheet-input" type="number" inputmode="decimal" step="any" min="0" value="20.00" data-coating-control>
+              </div>
+            </div>
+
+            <dl class="metric-list coating-result-list" aria-label="코팅용액 필요량 계산 결과">
+              <div class="metric-row">
+                <dt>총 건조 코팅 두께</dt>
+                <dd><span id="coatingTotalDryThickness" class="metric-value">-</span></dd>
+              </div>
+              <div class="metric-row">
+                <dt>건조 코팅층 부피</dt>
+                <dd><span id="coatingVolume" class="metric-value">-</span></dd>
+              </div>
+              <div class="metric-row">
+                <dt>건조 고형분 필요량</dt>
+                <dd><span id="coatingDrySolid" class="metric-value">-</span></dd>
+              </div>
+              <div class="metric-row">
+                <dt>로스 제외 코팅용액 필요량</dt>
+                <dd><span id="coatingNoLossG" class="metric-value">-</span></dd>
+              </div>
+              <div class="metric-row">
+                <dt>로스 포함 코팅용액 필요량</dt>
+                <dd><span id="coatingWithLossG" class="metric-value">-</span></dd>
+              </div>
+              <div class="metric-row metric-row-primary">
+                <dt>로스 포함 코팅용액 필요량</dt>
+                <dd><span id="coatingWithLossKg" class="metric-value">-</span></dd>
+              </div>
+            </dl>
+
+            <div class="secondary-actions">
+              <button id="applyCoatingRecipeButton" class="button button-secondary" type="button">현재 코팅용액 kg 적용</button>
+              <button id="resetRecipeButton" class="button button-secondary" type="button">입력 초기화</button>
+            </div>
+
+            <div class="table-scroll sheet-table-scroll">
+              <table class="sheet-table quick-length-table" aria-label="길이별 빠른 계산">
+                <caption>길이별 빠른 계산</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">코팅길이 (m)</th>
+                    <th scope="col">로스 제외 (g)</th>
+                    <th scope="col">로스 포함 (g)</th>
+                    <th scope="col">로스 포함 (kg)</th>
+                    <th scope="col">Silicon A (kg)</th>
+                    <th scope="col">Graphite (kg)</th>
+                    <th scope="col">적용</th>
+                  </tr>
+                </thead>
+                <tbody id="quickLengthRows">
+                  <tr data-quick-length-row>
+                    <td><input class="number-input sheet-input compact-number-input" type="number" inputmode="decimal" step="any" min="0" value="1" data-quick-length></td>
+                    <td data-quick-no-loss>-</td>
+                    <td data-quick-with-loss-g>-</td>
+                    <td data-quick-with-loss-kg>-</td>
+                    <td data-quick-silicon-kg>-</td>
+                    <td data-quick-graphite-kg>-</td>
+                    <td><button class="quick-apply-button" type="button" data-quick-apply>적용</button></td>
+                  </tr>
+                  <tr data-quick-length-row>
+                    <td><input class="number-input sheet-input compact-number-input" type="number" inputmode="decimal" step="any" min="0" value="10" data-quick-length></td>
+                    <td data-quick-no-loss>-</td>
+                    <td data-quick-with-loss-g>-</td>
+                    <td data-quick-with-loss-kg>-</td>
+                    <td data-quick-silicon-kg>-</td>
+                    <td data-quick-graphite-kg>-</td>
+                    <td><button class="quick-apply-button" type="button" data-quick-apply>적용</button></td>
+                  </tr>
+                  <tr data-quick-length-row>
+                    <td><input class="number-input sheet-input compact-number-input" type="number" inputmode="decimal" step="any" min="0" value="50" data-quick-length></td>
+                    <td data-quick-no-loss>-</td>
+                    <td data-quick-with-loss-g>-</td>
+                    <td data-quick-with-loss-kg>-</td>
+                    <td data-quick-silicon-kg>-</td>
+                    <td data-quick-graphite-kg>-</td>
+                    <td><button class="quick-apply-button" type="button" data-quick-apply>적용</button></td>
+                  </tr>
+                  <tr data-quick-length-row>
+                    <td><input class="number-input sheet-input compact-number-input" type="number" inputmode="decimal" step="any" min="0" value="100" data-quick-length></td>
+                    <td data-quick-no-loss>-</td>
+                    <td data-quick-with-loss-g>-</td>
+                    <td data-quick-with-loss-kg>-</td>
+                    <td data-quick-silicon-kg>-</td>
+                    <td data-quick-graphite-kg>-</td>
+                    <td><button class="quick-apply-button" type="button" data-quick-apply>적용</button></td>
+                  </tr>
+                  <tr data-quick-length-row>
+                    <td><input class="number-input sheet-input compact-number-input" type="number" inputmode="decimal" step="any" min="0" value="200" data-quick-length></td>
+                    <td data-quick-no-loss>-</td>
+                    <td data-quick-with-loss-g>-</td>
+                    <td data-quick-with-loss-kg>-</td>
+                    <td data-quick-silicon-kg>-</td>
+                    <td data-quick-graphite-kg>-</td>
+                    <td><button class="quick-apply-button" type="button" data-quick-apply>적용</button></td>
+                  </tr>
+                  <tr data-quick-length-row>
+                    <td><input class="number-input sheet-input compact-number-input" type="number" inputmode="decimal" step="any" min="0" value="500" data-quick-length></td>
+                    <td data-quick-no-loss>-</td>
+                    <td data-quick-with-loss-g>-</td>
+                    <td data-quick-with-loss-kg>-</td>
+                    <td data-quick-silicon-kg>-</td>
+                    <td data-quick-graphite-kg>-</td>
+                    <td><button class="quick-apply-button" type="button" data-quick-apply>적용</button></td>
+                  </tr>
+                  <tr data-quick-length-row>
+                    <td><input class="number-input sheet-input compact-number-input" type="number" inputmode="decimal" step="any" min="0" value="600" data-quick-length></td>
+                    <td data-quick-no-loss>-</td>
+                    <td data-quick-with-loss-g>-</td>
+                    <td data-quick-with-loss-kg>-</td>
+                    <td data-quick-silicon-kg>-</td>
+                    <td data-quick-graphite-kg>-</td>
+                    <td><button class="quick-apply-button" type="button" data-quick-apply>적용</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -333,11 +575,11 @@
     <div class="noscript-banner">이 앱은 JavaScript가 필요합니다.</div>
   </noscript>
 
-  <script src="./app.js?v=20260615-9" defer></script>
+  <script src="./app.js?v=20260615-11" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js?v=20260615-9").catch(() => {
+        navigator.serviceWorker.register("./service-worker.js?v=20260615-11").catch(() => {
           // PWA registration failure should not block calculator usage.
         });
       });
