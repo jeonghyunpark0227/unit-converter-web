@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="모바일 브라우저에서 바로 쓰는 All-in-One 단위 변환기">
+  <meta name="description" content="모바일 브라우저에서 바로 쓰는 All-in-One 단위 변환기, 고형분 계산기, Q-PAD2 양면 코팅 두께 계산기">
   <meta name="theme-color" content="#f4f7fb" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#08131d" media="(prefers-color-scheme: dark)">
   <meta name="mobile-web-app-capable" content="yes">
@@ -103,6 +103,216 @@
         </div>
 
         <p id="emptyState" class="empty-state">아직 변환 결과가 없습니다.</p>
+      </section>
+
+      <section class="panel calculator-panel" aria-labelledby="solids-title">
+        <div class="section-heading">
+          <h2 id="solids-title">고형분 계산기</h2>
+          <p>접시 무게, 시료 용액 무게, 건조 후 전체 무게로 고형분과 휘발분을 계산합니다.</p>
+        </div>
+
+        <div class="calculator-grid">
+          <div class="field">
+            <label for="solidDishWeight">접시 무게 (g)</label>
+            <input
+              id="solidDishWeight"
+              class="number-input"
+              type="number"
+              inputmode="decimal"
+              step="any"
+              min="0"
+              placeholder="예: 12.345"
+              data-solid-input
+            >
+          </div>
+
+          <div class="field">
+            <label for="solidSampleWeight">시료 용액 무게 (g)</label>
+            <input
+              id="solidSampleWeight"
+              class="number-input"
+              type="number"
+              inputmode="decimal"
+              step="any"
+              min="0"
+              placeholder="예: 1.500"
+              data-solid-input
+            >
+          </div>
+
+          <div class="field">
+            <label for="solidDryTotalWeight">건조 후 전체 무게 (g)</label>
+            <input
+              id="solidDryTotalWeight"
+              class="number-input"
+              type="number"
+              inputmode="decimal"
+              step="any"
+              min="0"
+              placeholder="예: 12.920"
+              data-solid-input
+            >
+          </div>
+        </div>
+
+        <dl class="metric-list" aria-label="고형분 계산 결과">
+          <div class="metric-row metric-row-primary">
+            <dt>고형분 %</dt>
+            <dd><span id="solidPercent" class="metric-value">-</span></dd>
+          </div>
+          <div class="metric-row">
+            <dt>고형분 무게</dt>
+            <dd><span id="solidMass" class="metric-value">-</span></dd>
+          </div>
+          <div class="metric-row">
+            <dt>휘발분 무게</dt>
+            <dd><span id="volatileMass" class="metric-value">-</span></dd>
+          </div>
+        </dl>
+
+        <p id="solidStatus" class="calculation-note is-muted" role="status" aria-live="polite">입력 대기</p>
+
+        <div class="calculation-actions">
+          <button id="solidResetButton" class="button button-secondary" type="button">입력 초기화</button>
+        </div>
+      </section>
+
+      <section class="panel calculator-panel" aria-labelledby="qpad-title">
+        <div class="section-heading">
+          <h2 id="qpad-title">Q-PAD2 양면 코팅 두께 계산기</h2>
+          <p>Al 중심층 기준으로 현재와 목표의 한쪽면 코팅 두께 및 추가 필요량을 계산합니다.</p>
+        </div>
+
+        <div class="calculator-grid qpad-grid">
+          <div class="field">
+            <label for="alThickness">Al 두께 (μm)</label>
+            <input
+              id="alThickness"
+              class="number-input"
+              type="number"
+              inputmode="decimal"
+              step="any"
+              min="0"
+              placeholder="예: 38"
+              data-qpad-control
+            >
+          </div>
+
+          <div class="field">
+            <label for="targetThickness">목표 최종 두께</label>
+            <div class="input-with-unit">
+              <input
+                id="targetThickness"
+                class="number-input"
+                type="number"
+                inputmode="decimal"
+                step="any"
+                min="0"
+                placeholder="예: 8"
+                data-qpad-control
+              >
+              <select id="targetThicknessUnit" class="select-input" aria-label="목표 최종 두께 단위" data-qpad-control>
+                <option value="um">μm</option>
+                <option value="mil">mil</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="currentThickness">현재 측정 두께</label>
+            <div class="input-with-unit">
+              <input
+                id="currentThickness"
+                class="number-input"
+                type="number"
+                inputmode="decimal"
+                step="any"
+                min="0"
+                placeholder="예: 6.5"
+                data-qpad-control
+              >
+              <select id="currentThicknessUnit" class="select-input" aria-label="현재 측정 두께 단위" data-qpad-control>
+                <option value="um">μm</option>
+                <option value="mil">mil</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <dl class="metric-list" aria-label="Q-PAD2 두께 계산 결과">
+          <div class="metric-row">
+            <dt>현재 한쪽면 코팅두께</dt>
+            <dd><span id="currentCoatingSingle" class="metric-value">-</span></dd>
+          </div>
+          <div class="metric-row">
+            <dt>목표 한쪽면 코팅두께</dt>
+            <dd><span id="targetCoatingSingle" class="metric-value">-</span></dd>
+          </div>
+          <div class="metric-row metric-row-primary">
+            <dt>한쪽면 추가 필요량</dt>
+            <dd><span id="additionalCoatingSingle" class="metric-value">-</span></dd>
+          </div>
+        </dl>
+
+        <p id="qpadStatus" class="calculation-note is-muted" role="status" aria-live="polite">입력 대기</p>
+
+        <div class="stack-visuals" aria-label="Q-PAD2 단면 구조">
+          <figure class="stack-figure">
+            <figcaption class="stack-figure-title">현재 단면</figcaption>
+            <div id="currentStackGraphic" class="stack-graphic is-empty" aria-hidden="true">
+              <div class="stack-layer stack-layer-coating"></div>
+              <div class="stack-layer stack-layer-al"></div>
+              <div class="stack-layer stack-layer-coating"></div>
+            </div>
+            <dl class="stack-legend">
+              <div class="stack-legend-row">
+                <span class="stack-swatch stack-swatch-coating" aria-hidden="true"></span>
+                <dt>상부 코팅</dt>
+                <dd id="currentTopLayerValue" class="stack-layer-value">-</dd>
+              </div>
+              <div class="stack-legend-row">
+                <span class="stack-swatch stack-swatch-al" aria-hidden="true"></span>
+                <dt>Al</dt>
+                <dd id="currentAlLayerValue" class="stack-layer-value">-</dd>
+              </div>
+              <div class="stack-legend-row">
+                <span class="stack-swatch stack-swatch-coating" aria-hidden="true"></span>
+                <dt>하부 코팅</dt>
+                <dd id="currentBottomLayerValue" class="stack-layer-value">-</dd>
+              </div>
+            </dl>
+          </figure>
+
+          <figure class="stack-figure">
+            <figcaption class="stack-figure-title">목표 단면</figcaption>
+            <div id="targetStackGraphic" class="stack-graphic is-empty" aria-hidden="true">
+              <div class="stack-layer stack-layer-coating"></div>
+              <div class="stack-layer stack-layer-al"></div>
+              <div class="stack-layer stack-layer-coating"></div>
+            </div>
+            <dl class="stack-legend">
+              <div class="stack-legend-row">
+                <span class="stack-swatch stack-swatch-coating" aria-hidden="true"></span>
+                <dt>상부 코팅</dt>
+                <dd id="targetTopLayerValue" class="stack-layer-value">-</dd>
+              </div>
+              <div class="stack-legend-row">
+                <span class="stack-swatch stack-swatch-al" aria-hidden="true"></span>
+                <dt>Al</dt>
+                <dd id="targetAlLayerValue" class="stack-layer-value">-</dd>
+              </div>
+              <div class="stack-legend-row">
+                <span class="stack-swatch stack-swatch-coating" aria-hidden="true"></span>
+                <dt>하부 코팅</dt>
+                <dd id="targetBottomLayerValue" class="stack-layer-value">-</dd>
+              </div>
+            </dl>
+          </figure>
+        </div>
+
+        <div class="calculation-actions">
+          <button id="qpadResetButton" class="button button-secondary" type="button">입력 초기화</button>
+        </div>
       </section>
     </main>
   </div>
