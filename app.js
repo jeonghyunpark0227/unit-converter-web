@@ -88,6 +88,8 @@ const elements = {
   resultsTable: document.querySelector("#resultsTable"),
   emptyState: document.querySelector("#emptyState"),
   statusMessage: document.querySelector("#statusMessage"),
+  tabButtons: Array.from(document.querySelectorAll("[data-tab-target]")),
+  tabPanels: Array.from(document.querySelectorAll(".tab-panel")),
   solidDishWeight: document.querySelector("#solidDishWeight"),
   solidSampleWeight: document.querySelector("#solidSampleWeight"),
   solidDryTotalWeight: document.querySelector("#solidDryTotalWeight"),
@@ -404,6 +406,28 @@ function clearResults() {
   renderResults(currentResults);
   showStatus("결과를 지웠습니다.", "success");
   restoreInputFocus();
+}
+
+function setActiveTab(targetPanelId) {
+  elements.tabButtons.forEach((button) => {
+    const isActive = button.dataset.tabTarget === targetPanelId;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+
+  elements.tabPanels.forEach((panel) => {
+    const isActive = panel.id === targetPanelId;
+    panel.classList.toggle("is-active", isActive);
+    panel.hidden = !isActive;
+  });
+}
+
+function bindTabEvents() {
+  elements.tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      setActiveTab(button.dataset.tabTarget);
+    });
+  });
 }
 
 function convertToken(token, fromUnit, toUnit, convertConfig) {
@@ -852,6 +876,7 @@ function initializeApp() {
   updateUnitBoxes();
   onFromChanged();
   bindEvents();
+  bindTabEvents();
   bindSpecialCalculatorEvents();
   renderResults(currentResults);
   initializeSpecialCalculators();

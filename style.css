@@ -122,6 +122,53 @@ select {
   gap: 1rem;
 }
 
+.tab-list {
+  position: sticky;
+  top: max(0.5rem, env(safe-area-inset-top));
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  padding: 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--panel);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+}
+
+.tab-button {
+  min-width: 0;
+  min-height: 2.8rem;
+  padding: 0.7rem 0.65rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  background: transparent;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tab-button.is-active {
+  color: #f5fbff;
+  border-color: var(--brand-strong);
+  background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+}
+
+.tab-button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tab-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.tab-panel[hidden] {
+  display: none;
+}
+
 .panel {
   padding: 1rem;
   border: 1px solid var(--line);
