@@ -21,6 +21,8 @@
   --coating-deep: #15776d;
   --aluminum: #d6dde4;
   --aluminum-edge: #8795a1;
+  --uncoated: #f7fafc;
+  --uncoated-edge: #c7d1da;
   --shadow: 0 20px 40px rgba(9, 28, 44, 0.08);
   --radius-lg: 24px;
   --radius-md: 18px;
@@ -51,6 +53,8 @@
     --coating-deep: #249082;
     --aluminum: #76818c;
     --aluminum-edge: #b4c0ca;
+    --uncoated: #182834;
+    --uncoated-edge: #42576a;
     --shadow: 0 24px 48px rgba(0, 0, 0, 0.28);
   }
 }
@@ -489,6 +493,13 @@ select {
     linear-gradient(180deg, var(--aluminum), var(--aluminum-edge));
 }
 
+.stack-layer-uncoated {
+  border-block: 1px dashed var(--uncoated-edge);
+  background:
+    repeating-linear-gradient(135deg, rgba(93, 112, 128, 0.12) 0 0.25rem, transparent 0.25rem 0.55rem),
+    var(--uncoated);
+}
+
 .stack-legend {
   display: grid;
   gap: 0.4rem;
@@ -517,6 +528,10 @@ select {
 
 .stack-swatch-al {
   background: var(--aluminum);
+}
+
+.stack-swatch-uncoated {
+  background: var(--uncoated);
 }
 
 .stack-layer-value {

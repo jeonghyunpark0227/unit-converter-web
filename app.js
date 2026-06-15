@@ -585,8 +585,16 @@ function convertThicknessToMicrometer(value, unit) {
   return unit === "mil" ? value * MIL_TO_MICROMETER : value;
 }
 
-function setStackRows(graphic, coatingOneSideUm, alUm) {
-  if (!graphic || !Number.isFinite(coatingOneSideUm) || !Number.isFinite(alUm) || coatingOneSideUm < 0 || alUm <= 0) {
+function setStackRows(graphic, topCoatingUm, alUm, bottomCoatingUm = topCoatingUm) {
+  const hasValidLayers =
+    Number.isFinite(topCoatingUm) &&
+    Number.isFinite(alUm) &&
+    Number.isFinite(bottomCoatingUm) &&
+    topCoatingUm >= 0 &&
+    bottomCoatingUm >= 0 &&
+    alUm > 0;
+
+  if (!graphic || !hasValidLayers) {
     graphic?.style.removeProperty("--top-ratio");
     graphic?.style.removeProperty("--core-ratio");
     graphic?.style.removeProperty("--bottom-ratio");
@@ -594,14 +602,15 @@ function setStackRows(graphic, coatingOneSideUm, alUm) {
     return;
   }
 
-  const totalUm = alUm + coatingOneSideUm * 2;
+  const totalUm = alUm + topCoatingUm + bottomCoatingUm;
   const minimumVisible = totalUm * 0.055;
-  const coatingRatio = coatingOneSideUm > 0 ? Math.max(coatingOneSideUm, minimumVisible) : 0.01;
+  const topRatio = topCoatingUm > 0 ? Math.max(topCoatingUm, minimumVisible) : 0.01;
   const coreRatio = Math.max(alUm, minimumVisible);
+  const bottomRatio = bottomCoatingUm > 0 ? Math.max(bottomCoatingUm, minimumVisible) : 0.01;
 
-  graphic.style.setProperty("--top-ratio", `${coatingRatio}fr`);
+  graphic.style.setProperty("--top-ratio", `${topRatio}fr`);
   graphic.style.setProperty("--core-ratio", `${coreRatio}fr`);
-  graphic.style.setProperty("--bottom-ratio", `${coatingRatio}fr`);
+  graphic.style.setProperty("--bottom-ratio", `${bottomRatio}fr`);
   graphic.classList.remove("is-empty");
 }
 
@@ -612,11 +621,19 @@ function resetStackVisual(graphic, topValue, alValue, bottomValue) {
   setText(bottomValue, "-");
 }
 
-function updateStackVisual(graphic, topValue, alValue, bottomValue, coatingOneSideUm, alUm) {
-  setStackRows(graphic, coatingOneSideUm, alUm);
-  setText(topValue, formatMeasurement(coatingOneSideUm, "μm"));
+function updateStackVisual(
+  graphic,
+  topValue,
+  alValue,
+  bottomValue,
+  topCoatingUm,
+  alUm,
+  bottomCoatingUm = topCoatingUm,
+) {
+  setStackRows(graphic, topCoatingUm, alUm, bottomCoatingUm);
+  setText(topValue, formatMeasurement(topCoatingUm, "μm"));
   setText(alValue, formatMeasurement(alUm, "μm"));
-  setText(bottomValue, formatMeasurement(coatingOneSideUm, "μm"));
+  setText(bottomValue, formatMeasurement(bottomCoatingUm, "μm"));
 }
 
 function renderQpadEmpty() {
@@ -659,38 +676,25 @@ function updateQpadCalculator() {
   }
 
   const targetTotalUm = convertThicknessToMicrometer(targetThickness, elements.targetThicknessUnit.value);
-  const currentTotalUm = convertThicknessToMicrometer(currentThickness, elements.currentThicknessUnit.value);
+  const currentOneSideUm = convertThicknessToMicrometer(currentThickness, elements.currentThicknessUnit.value);
   const targetOneSideUm = (targetTotalUm - alUm) / 2;
-  const currentOneSideUm = (currentTotalUm - alUm) / 2;
   const targetIsValid = targetOneSideUm >= 0;
-  const currentIsValid = currentOneSideUm >= 0;
 
-  setText(
-    elements.currentCoatingSingle,
-    currentIsValid ? formatThicknessPair(currentOneSideUm) : "Al보다 작음",
-  );
+  setText(elements.currentCoatingSingle, formatThicknessPair(currentOneSideUm));
   setText(
     elements.targetCoatingSingle,
     targetIsValid ? formatThicknessPair(targetOneSideUm) : "Al보다 작음",
   );
 
-  if (currentIsValid) {
-    updateStackVisual(
-      elements.currentStackGraphic,
-      elements.currentTopLayerValue,
-      elements.currentAlLayerValue,
-      elements.currentBottomLayerValue,
-      currentOneSideUm,
-      alUm,
-    );
-  } else {
-    resetStackVisual(
-      elements.currentStackGraphic,
-      elements.currentTopLayerValue,
-      elements.currentAlLayerValue,
-      elements.currentBottomLayerValue,
-    );
-  }
+  updateStackVisual(
+    elements.currentStackGraphic,
+    elements.currentTopLayerValue,
+    elements.currentAlLayerValue,
+    elements.currentBottomLayerValue,
+    currentOneSideUm,
+    alUm,
+    0,
+  );
 
   if (targetIsValid) {
     updateStackVisual(
@@ -710,7 +714,7 @@ function updateQpadCalculator() {
     );
   }
 
-  if (!targetIsValid || !currentIsValid) {
+  if (!targetIsValid) {
     setText(elements.additionalCoatingSingle, "-");
     setCalculationNote(elements.qpadStatus, "최종 두께는 Al 두께보다 커야 합니다.", "error");
     return;

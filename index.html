@@ -180,7 +180,7 @@
       <section class="panel calculator-panel" aria-labelledby="qpad-title">
         <div class="section-heading">
           <h2 id="qpad-title">Q-PAD2 양면 코팅 두께 계산기</h2>
-          <p>Al 중심층 기준으로 현재와 목표의 한쪽면 코팅 두께 및 추가 필요량을 계산합니다.</p>
+          <p>현재 측정 두께는 한쪽면 코팅층 두께로 보고, 목표 최종 두께에서 한쪽면 추가 필요량을 계산합니다.</p>
         </div>
 
         <div class="calculator-grid qpad-grid">
@@ -219,7 +219,7 @@
           </div>
 
           <div class="field">
-            <label for="currentThickness">현재 측정 두께</label>
+            <label for="currentThickness">현재 측정 두께 (한쪽면)</label>
             <div class="input-with-unit">
               <input
                 id="currentThickness"
@@ -231,7 +231,7 @@
                 placeholder="예: 6.5"
                 data-qpad-control
               >
-              <select id="currentThicknessUnit" class="select-input" aria-label="현재 측정 두께 단위" data-qpad-control>
+              <select id="currentThicknessUnit" class="select-input" aria-label="현재 측정 두께 한쪽면 단위" data-qpad-control>
                 <option value="um">μm</option>
                 <option value="mil">mil</option>
               </select>
@@ -262,12 +262,12 @@
             <div id="currentStackGraphic" class="stack-graphic is-empty" aria-hidden="true">
               <div class="stack-layer stack-layer-coating"></div>
               <div class="stack-layer stack-layer-al"></div>
-              <div class="stack-layer stack-layer-coating"></div>
+              <div class="stack-layer stack-layer-uncoated"></div>
             </div>
             <dl class="stack-legend">
               <div class="stack-legend-row">
                 <span class="stack-swatch stack-swatch-coating" aria-hidden="true"></span>
-                <dt>상부 코팅</dt>
+                <dt>측정면 코팅</dt>
                 <dd id="currentTopLayerValue" class="stack-layer-value">-</dd>
               </div>
               <div class="stack-legend-row">
@@ -276,8 +276,8 @@
                 <dd id="currentAlLayerValue" class="stack-layer-value">-</dd>
               </div>
               <div class="stack-legend-row">
-                <span class="stack-swatch stack-swatch-coating" aria-hidden="true"></span>
-                <dt>하부 코팅</dt>
+                <span class="stack-swatch stack-swatch-uncoated" aria-hidden="true"></span>
+                <dt>반대면</dt>
                 <dd id="currentBottomLayerValue" class="stack-layer-value">-</dd>
               </div>
             </dl>
