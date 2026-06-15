@@ -73,6 +73,8 @@ const unitDisplayLabels = {
 const numberTokenPatternSource =
   "[+-]?(?:(?:(?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d*)?)|\\.\\d+)";
 
+const MIL_TO_MICROMETER = 25.4;
+
 const elements = {
   inputValues: document.querySelector("#inputValues"),
   convertType: document.querySelector("#convertType"),
@@ -86,6 +88,34 @@ const elements = {
   resultsTable: document.querySelector("#resultsTable"),
   emptyState: document.querySelector("#emptyState"),
   statusMessage: document.querySelector("#statusMessage"),
+  solidDishWeight: document.querySelector("#solidDishWeight"),
+  solidSampleWeight: document.querySelector("#solidSampleWeight"),
+  solidDryTotalWeight: document.querySelector("#solidDryTotalWeight"),
+  solidPercent: document.querySelector("#solidPercent"),
+  solidMass: document.querySelector("#solidMass"),
+  volatileMass: document.querySelector("#volatileMass"),
+  solidStatus: document.querySelector("#solidStatus"),
+  solidResetButton: document.querySelector("#solidResetButton"),
+  alThickness: document.querySelector("#alThickness"),
+  targetThickness: document.querySelector("#targetThickness"),
+  targetThicknessUnit: document.querySelector("#targetThicknessUnit"),
+  currentThickness: document.querySelector("#currentThickness"),
+  currentThicknessUnit: document.querySelector("#currentThicknessUnit"),
+  currentCoatingSingle: document.querySelector("#currentCoatingSingle"),
+  targetCoatingSingle: document.querySelector("#targetCoatingSingle"),
+  additionalCoatingSingle: document.querySelector("#additionalCoatingSingle"),
+  qpadStatus: document.querySelector("#qpadStatus"),
+  qpadResetButton: document.querySelector("#qpadResetButton"),
+  currentStackGraphic: document.querySelector("#currentStackGraphic"),
+  targetStackGraphic: document.querySelector("#targetStackGraphic"),
+  currentTopLayerValue: document.querySelector("#currentTopLayerValue"),
+  currentAlLayerValue: document.querySelector("#currentAlLayerValue"),
+  currentBottomLayerValue: document.querySelector("#currentBottomLayerValue"),
+  targetTopLayerValue: document.querySelector("#targetTopLayerValue"),
+  targetAlLayerValue: document.querySelector("#targetAlLayerValue"),
+  targetBottomLayerValue: document.querySelector("#targetBottomLayerValue"),
+  solidInputs: Array.from(document.querySelectorAll("[data-solid-input]")),
+  qpadControls: Array.from(document.querySelectorAll("[data-qpad-control]")),
 };
 
 let currentResults = [];
@@ -239,6 +269,12 @@ function restoreInputFocus() {
 
   elements.inputValues.focus({ preventScroll: true });
   elements.inputValues.select();
+}
+
+function focusInputIfDesktop(input) {
+  if (shouldAutoFocusInput() && input) {
+    input.focus({ preventScroll: true });
+  }
 }
 
 function setEmptyState(isEmpty) {
@@ -439,6 +475,283 @@ function onConvert() {
   window.setTimeout(dismissMobileKeyboard, 0);
 }
 
+function parseNumberInput(input) {
+  if (!input) {
+    return null;
+  }
+
+  const normalizedValue = input.value.trim().replace(/,/g, "");
+  if (!normalizedValue) {
+    return null;
+  }
+
+  const value = Number(normalizedValue);
+  return Number.isFinite(value) ? value : null;
+}
+
+function formatNumber(value, maximumFractionDigits = 4) {
+  if (!Number.isFinite(value)) {
+    return "-";
+  }
+
+  const absValue = Math.abs(value);
+  const digits = absValue > 0 && absValue < 0.01 ? 6 : maximumFractionDigits;
+  return value.toLocaleString("ko-KR", {
+    maximumFractionDigits: digits,
+  });
+}
+
+function formatMeasurement(value, unit, maximumFractionDigits = 4) {
+  return `${formatNumber(value, maximumFractionDigits)} ${unit}`;
+}
+
+function formatThicknessPair(valueUm) {
+  return `${formatMeasurement(valueUm, "μm")} (${formatMeasurement(valueUm / MIL_TO_MICROMETER, "mil")})`;
+}
+
+function setText(element, text) {
+  if (element) {
+    element.textContent = text;
+  }
+}
+
+function setCalculationNote(element, message, tone = "muted") {
+  if (!element) {
+    return;
+  }
+
+  element.textContent = message;
+  element.className = `calculation-note is-${tone}`;
+}
+
+function renderSolidEmpty() {
+  setText(elements.solidPercent, "-");
+  setText(elements.solidMass, "-");
+  setText(elements.volatileMass, "-");
+  setCalculationNote(elements.solidStatus, "입력 대기", "muted");
+}
+
+function updateSolidsCalculator() {
+  if (!elements.solidPercent) {
+    return;
+  }
+
+  const dishWeight = parseNumberInput(elements.solidDishWeight);
+  const sampleWeight = parseNumberInput(elements.solidSampleWeight);
+  const dryTotalWeight = parseNumberInput(elements.solidDryTotalWeight);
+
+  if ([dishWeight, sampleWeight, dryTotalWeight].some((value) => value === null)) {
+    renderSolidEmpty();
+    return;
+  }
+
+  if (sampleWeight <= 0) {
+    renderSolidEmpty();
+    setCalculationNote(elements.solidStatus, "시료 용액 무게는 0보다 커야 합니다.", "error");
+    return;
+  }
+
+  const solidMass = dryTotalWeight - dishWeight;
+  const volatileMass = sampleWeight - solidMass;
+
+  if (solidMass < 0) {
+    renderSolidEmpty();
+    setCalculationNote(elements.solidStatus, "건조 후 전체 무게가 접시 무게보다 작습니다.", "error");
+    return;
+  }
+
+  if (volatileMass < 0) {
+    renderSolidEmpty();
+    setCalculationNote(elements.solidStatus, "고형분 무게가 시료 용액 무게보다 큽니다.", "error");
+    return;
+  }
+
+  const solidPercent = (solidMass / sampleWeight) * 100;
+  setText(elements.solidPercent, formatMeasurement(solidPercent, "%", 3));
+  setText(elements.solidMass, formatMeasurement(solidMass, "g", 4));
+  setText(elements.volatileMass, formatMeasurement(volatileMass, "g", 4));
+  setCalculationNote(elements.solidStatus, "계산 완료", "success");
+}
+
+function resetSolidsCalculator() {
+  elements.solidInputs.forEach((input) => {
+    input.value = "";
+  });
+  renderSolidEmpty();
+  focusInputIfDesktop(elements.solidDishWeight);
+}
+
+function convertThicknessToMicrometer(value, unit) {
+  return unit === "mil" ? value * MIL_TO_MICROMETER : value;
+}
+
+function setStackRows(graphic, coatingOneSideUm, alUm) {
+  if (!graphic || !Number.isFinite(coatingOneSideUm) || !Number.isFinite(alUm) || coatingOneSideUm < 0 || alUm <= 0) {
+    graphic?.style.removeProperty("--top-ratio");
+    graphic?.style.removeProperty("--core-ratio");
+    graphic?.style.removeProperty("--bottom-ratio");
+    graphic?.classList.add("is-empty");
+    return;
+  }
+
+  const totalUm = alUm + coatingOneSideUm * 2;
+  const minimumVisible = totalUm * 0.055;
+  const coatingRatio = coatingOneSideUm > 0 ? Math.max(coatingOneSideUm, minimumVisible) : 0.01;
+  const coreRatio = Math.max(alUm, minimumVisible);
+
+  graphic.style.setProperty("--top-ratio", `${coatingRatio}fr`);
+  graphic.style.setProperty("--core-ratio", `${coreRatio}fr`);
+  graphic.style.setProperty("--bottom-ratio", `${coatingRatio}fr`);
+  graphic.classList.remove("is-empty");
+}
+
+function resetStackVisual(graphic, topValue, alValue, bottomValue) {
+  setStackRows(graphic, null, null);
+  setText(topValue, "-");
+  setText(alValue, "-");
+  setText(bottomValue, "-");
+}
+
+function updateStackVisual(graphic, topValue, alValue, bottomValue, coatingOneSideUm, alUm) {
+  setStackRows(graphic, coatingOneSideUm, alUm);
+  setText(topValue, formatMeasurement(coatingOneSideUm, "μm"));
+  setText(alValue, formatMeasurement(alUm, "μm"));
+  setText(bottomValue, formatMeasurement(coatingOneSideUm, "μm"));
+}
+
+function renderQpadEmpty() {
+  setText(elements.currentCoatingSingle, "-");
+  setText(elements.targetCoatingSingle, "-");
+  setText(elements.additionalCoatingSingle, "-");
+  setCalculationNote(elements.qpadStatus, "입력 대기", "muted");
+  resetStackVisual(
+    elements.currentStackGraphic,
+    elements.currentTopLayerValue,
+    elements.currentAlLayerValue,
+    elements.currentBottomLayerValue,
+  );
+  resetStackVisual(
+    elements.targetStackGraphic,
+    elements.targetTopLayerValue,
+    elements.targetAlLayerValue,
+    elements.targetBottomLayerValue,
+  );
+}
+
+function updateQpadCalculator() {
+  if (!elements.currentCoatingSingle) {
+    return;
+  }
+
+  const alUm = parseNumberInput(elements.alThickness);
+  const targetThickness = parseNumberInput(elements.targetThickness);
+  const currentThickness = parseNumberInput(elements.currentThickness);
+
+  if ([alUm, targetThickness, currentThickness].some((value) => value === null)) {
+    renderQpadEmpty();
+    return;
+  }
+
+  if (alUm <= 0 || targetThickness <= 0 || currentThickness <= 0) {
+    renderQpadEmpty();
+    setCalculationNote(elements.qpadStatus, "두께는 모두 0보다 커야 합니다.", "error");
+    return;
+  }
+
+  const targetTotalUm = convertThicknessToMicrometer(targetThickness, elements.targetThicknessUnit.value);
+  const currentTotalUm = convertThicknessToMicrometer(currentThickness, elements.currentThicknessUnit.value);
+  const targetOneSideUm = (targetTotalUm - alUm) / 2;
+  const currentOneSideUm = (currentTotalUm - alUm) / 2;
+  const targetIsValid = targetOneSideUm >= 0;
+  const currentIsValid = currentOneSideUm >= 0;
+
+  setText(
+    elements.currentCoatingSingle,
+    currentIsValid ? formatThicknessPair(currentOneSideUm) : "Al보다 작음",
+  );
+  setText(
+    elements.targetCoatingSingle,
+    targetIsValid ? formatThicknessPair(targetOneSideUm) : "Al보다 작음",
+  );
+
+  if (currentIsValid) {
+    updateStackVisual(
+      elements.currentStackGraphic,
+      elements.currentTopLayerValue,
+      elements.currentAlLayerValue,
+      elements.currentBottomLayerValue,
+      currentOneSideUm,
+      alUm,
+    );
+  } else {
+    resetStackVisual(
+      elements.currentStackGraphic,
+      elements.currentTopLayerValue,
+      elements.currentAlLayerValue,
+      elements.currentBottomLayerValue,
+    );
+  }
+
+  if (targetIsValid) {
+    updateStackVisual(
+      elements.targetStackGraphic,
+      elements.targetTopLayerValue,
+      elements.targetAlLayerValue,
+      elements.targetBottomLayerValue,
+      targetOneSideUm,
+      alUm,
+    );
+  } else {
+    resetStackVisual(
+      elements.targetStackGraphic,
+      elements.targetTopLayerValue,
+      elements.targetAlLayerValue,
+      elements.targetBottomLayerValue,
+    );
+  }
+
+  if (!targetIsValid || !currentIsValid) {
+    setText(elements.additionalCoatingSingle, "-");
+    setCalculationNote(elements.qpadStatus, "최종 두께는 Al 두께보다 커야 합니다.", "error");
+    return;
+  }
+
+  const additionalOneSideUm = targetOneSideUm - currentOneSideUm;
+
+  if (additionalOneSideUm > 0) {
+    setText(elements.additionalCoatingSingle, formatThicknessPair(additionalOneSideUm));
+    setCalculationNote(elements.qpadStatus, "한쪽면 기준 추가 필요", "warning");
+    return;
+  }
+
+  if (additionalOneSideUm < 0) {
+    setText(elements.additionalCoatingSingle, `0 μm (초과 ${formatThicknessPair(Math.abs(additionalOneSideUm))})`);
+    setCalculationNote(elements.qpadStatus, "목표 두께 이상", "success");
+    return;
+  }
+
+  setText(elements.additionalCoatingSingle, "0 μm");
+  setCalculationNote(elements.qpadStatus, "목표 두께 일치", "success");
+}
+
+function resetQpadCalculator() {
+  elements.qpadControls.forEach((control) => {
+    if (control.tagName !== "SELECT") {
+      control.value = "";
+    }
+  });
+
+  if (elements.targetThicknessUnit) {
+    elements.targetThicknessUnit.value = "um";
+  }
+  if (elements.currentThicknessUnit) {
+    elements.currentThicknessUnit.value = "um";
+  }
+
+  renderQpadEmpty();
+  focusInputIfDesktop(elements.alThickness);
+}
+
 function handleInputPaste(event) {
   const pastedText = event.clipboardData?.getData("text");
   if (typeof pastedText !== "string") {
@@ -488,13 +801,37 @@ function bindEvents() {
   });
 }
 
+function bindSpecialCalculatorEvents() {
+  elements.solidInputs.forEach((input) => {
+    input.addEventListener("input", updateSolidsCalculator);
+  });
+  elements.solidResetButton?.addEventListener("click", resetSolidsCalculator);
+
+  elements.qpadControls.forEach((control) => {
+    control.addEventListener("input", updateQpadCalculator);
+    control.addEventListener("change", updateQpadCalculator);
+  });
+  elements.qpadResetButton?.addEventListener("click", resetQpadCalculator);
+}
+
+function initializeSpecialCalculators() {
+  if (elements.solidPercent) {
+    renderSolidEmpty();
+  }
+  if (elements.currentCoatingSingle) {
+    renderQpadEmpty();
+  }
+}
+
 function initializeApp() {
   populateConvertTypes();
   elements.convertType.value = Object.keys(convertTypes)[0];
   updateUnitBoxes();
   onFromChanged();
   bindEvents();
+  bindSpecialCalculatorEvents();
   renderResults(currentResults);
+  initializeSpecialCalculators();
 
   if (shouldAutoFocusInput()) {
     elements.inputValues.focus({ preventScroll: true });
